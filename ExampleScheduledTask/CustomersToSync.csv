@@ -1,0 +1,3 @@
+BaseOU,CustomerNumber,EmailDomain
+"OU=ExampleOU,DC=contoso,DC=com",1234567,contoso.com
+,98765-4321,example.org
