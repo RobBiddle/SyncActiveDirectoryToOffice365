@@ -101,7 +101,7 @@ function Sync-ContactsToOffice365 ($ContactsToSync) {
             foreach ($365ProxyAddress in $365Contact.EmailAddresses) {
                 if ($ADContact.proxyAddresses -inotcontains $365ProxyAddress) {
                     try {
-                        Set-MailContact -Identity $365Contact.Identity -EmailAddresses @{Remove = $365ProxyAddress}
+                        Set-MailContact -Identity $365Contact.Identity -EmailAddresses @{Remove = $365ProxyAddress} -Confirm:$false
                         Write-ScriptEvent -EntryType Warning -EventId 187 -Message "SyncActiveDirectoryToOffice365 `nREMOVED proxy address: $ADproxyAddress `nFrom MailContact: $($365Contact.Identity)"
                     }
                     catch {
@@ -115,7 +115,7 @@ function Sync-ContactsToOffice365 ($ContactsToSync) {
             foreach ($ADproxyAddress in $ADContact.proxyAddresses) {
                 if ($365Contact.EmailAddresses -inotcontains $ADproxyAddress) {
                     try {
-                        Set-MailContact -Identity $365Contact.Identity -EmailAddresses @{Add = $ADproxyAddress}
+                        Set-MailContact -Identity $365Contact.Identity -EmailAddresses @{Add = $ADproxyAddress} -Confirm:$false
                         Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365 `nAdded proxy address: $ADproxyAddress `nto MailContact: $($365Contact.Identity)"
                     }
                     catch [System.Management.Automation.RemoteException] {

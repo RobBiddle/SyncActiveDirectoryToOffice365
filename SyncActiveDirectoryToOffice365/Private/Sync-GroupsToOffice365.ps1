@@ -102,7 +102,7 @@ function Sync-GroupsToOffice365 {
             foreach ($365ProxyAddress in $365Group.EmailAddresses) {
                 if ( ($365ProxyAddress) -and ($365ProxyAddress -notin $ADGroup.proxyAddresses)) {
                     try {
-                        Set-DistributionGroup -Identity $365Group.Identity -EmailAddresses @{Remove = $365ProxyAddress}
+                        Set-DistributionGroup -Identity $365Group.Identity -EmailAddresses @{Remove = $365ProxyAddress} -Confirm:$false
                     }
                     catch {
                         $ErrorMessage = $_.Exception.Message
@@ -114,7 +114,7 @@ function Sync-GroupsToOffice365 {
             foreach ($ADproxyAddress in $ADGroup.proxyAddresses) {
                 if ( ($ADproxyAddress) -and ($ADproxyAddress -notin $365Group.EmailAddresses)) {
                     try {
-                        Set-DistributionGroup -Identity $365Group.Identity -EmailAddresses @{Add = $ADproxyAddress}
+                        Set-DistributionGroup -Identity $365Group.Identity -EmailAddresses @{Add = $ADproxyAddress} -Confirm:$false
                         Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365 `nAdded proxy address: $ADproxyAddress `nTo Group: $($365Group.Identity)"
                     }
                     catch {
@@ -128,7 +128,7 @@ function Sync-GroupsToOffice365 {
             foreach ($365member in $365GroupMembers) {
                 if ( ($365member.PrimarySmtpAddress ) -and ($365member.PrimarySmtpAddress -notin $ADGroupMembers.mail) ) {
                     try {
-                        Remove-DistributionGroupMember -Identity $365Group.Identity -Member $365member.PrimarySmtpAddress
+                        Remove-DistributionGroupMember -Identity $365Group.Identity -Member $365member.PrimarySmtpAddress -Confirm:$false
                         Write-ScriptEvent -EntryType Warning -EventId 411 -Message "SyncActiveDirectoryToOffice365 Removed user: $($365member.PrimarySmtpAddress) `nfrom Office 365 Group: $($365Group.Identity)"
                     }
                     catch {

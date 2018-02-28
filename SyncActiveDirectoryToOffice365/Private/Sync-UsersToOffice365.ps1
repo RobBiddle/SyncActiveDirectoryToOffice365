@@ -103,7 +103,7 @@ function Sync-UsersToOffice365 ($UsersToSync) {
                 foreach ($365ProxyAddress in $365Mailbox.EmailAddresses) {
                     if ( ($365ProxyAddress -imatch 'SMTP') -and ($365ProxyAddress -notin $ADUser.proxyAddresses)) {
                         try {
-                            Set-MailBox -Identity $365User.userPrincipalName -EmailAddresses @{Remove = $365ProxyAddress}
+                            Set-MailBox -Identity $365User.userPrincipalName -EmailAddresses @{Remove = $365ProxyAddress} -Confirm:$false
                             $365ProxyAddressesToRemove += $365ProxyAddress
                         }
                         catch {
@@ -130,7 +130,7 @@ function Sync-UsersToOffice365 ($UsersToSync) {
                 foreach ($ADproxyAddress in $ADUser.proxyAddresses) {
                     if ($ADproxyAddress -notin $365Mailbox.EmailAddresses) {
                         try {
-                            Set-MailBox -Identity $365User.userPrincipalName -EmailAddresses @{Add = $ADproxyAddress}
+                            Set-MailBox -Identity $365User.userPrincipalName -EmailAddresses @{Add = $ADproxyAddress} -Confirm:$false
                             Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365 `nAdded proxy address: $ADProxyAddress `nTo user: $($365User.DisplayName)"
                         }
                         catch {
