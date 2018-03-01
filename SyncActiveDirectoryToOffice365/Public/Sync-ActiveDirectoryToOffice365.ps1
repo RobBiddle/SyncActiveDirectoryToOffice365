@@ -148,6 +148,13 @@ function Sync-ActiveDirectoryToOffice365 {
         Import-Module ActiveDirectory -Force -Verbose:$false -ErrorAction Stop -WarningAction SilentlyContinue
     }
     
+    if ($ObjectsToSync -contains 'Users') {
+        Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Getting Users for $EmailDomain"
+        $UsersToSync = Get-UsersToSync -DomainControllerFQDN $DomainControllerFQDN -EmailDomain $EmailDomain
+        Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Syncing Users for $EmailDomain"
+        Sync-UsersToOffice365 -UsersToSync $UsersToSync
+    }
+    
     if ($ObjectsToSync -contains 'Contacts') {
         Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Getting Contacts for $EmailDomain"
         $ContactsToSync = Get-ContactsToSync -BaseOU $BaseOU -DomainControllerFQDN $DomainControllerFQDN -EmailDomain $EmailDomain
@@ -174,13 +181,6 @@ function Sync-ActiveDirectoryToOffice365 {
         }
         Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Syncing Groups for $EmailDomain"
         Sync-GroupsToOffice365 @SyncGroupParams
-    }
-
-    if ($ObjectsToSync -contains 'Users') {
-        Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Getting Users for $EmailDomain"
-        $UsersToSync = Get-UsersToSync -DomainControllerFQDN $DomainControllerFQDN -EmailDomain $EmailDomain
-        Write-ScriptEvent -EntryType Information -EventId 411 -Message "SyncActiveDirectoryToOffice365`n Syncing Users for $EmailDomain"
-        Sync-UsersToOffice365 -UsersToSync $UsersToSync
     }
 
     # Clean up PSSession
