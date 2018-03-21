@@ -67,6 +67,21 @@ function Sync-UsersToOffice365 ($UsersToSync) {
             $365User = $null
             $365User = Get-MsolUser -UserPrincipalName $ADUser.UserPrincipalName -ErrorAction SilentlyContinue
             $365Mailbox = Get-Mailbox -Identity $365User.UserPrincipalName -ErrorAction SilentlyContinue
+
+            if ($365User.BlockCredential -eq $ADUser.Enabled) {
+                if (($365User.BlockCredential -eq $true) -and ($ADUser.Enabled -eq $true )   ) {
+                    $EventMessage = "Enabling User: $($365User.DisplayName)"
+                    Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
+                    -BlockCredential $false;
+                }
+                elseif (($365User.BlockCredential -eq $false) -and ($ADUser.Enabled -eq $false )   ) {
+                    $EventMessage = "Disabling User: $($365User.DisplayName)"
+                    Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
+                    -BlockCredential $true;
+                }
+                Write-ScriptEvent -EntryType Warning -EventId 411 -Message $EventMessage
+            }
+
             if ($365User.FirstName -notlike $ADUser.givenName) {
                 Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
                     -FirstName $ADUser.givenName;
