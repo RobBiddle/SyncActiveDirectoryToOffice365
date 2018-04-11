@@ -72,43 +72,86 @@ function Sync-UsersToOffice365 ($UsersToSync) {
                 if (($365User.BlockCredential -eq $true) -and ($ADUser.Enabled -eq $true )   ) {
                     $EventMessage = "Enabling User: $($365User.DisplayName)"
                     Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
-                    -BlockCredential $false;
+                        -BlockCredential $false;
                 }
                 elseif (($365User.BlockCredential -eq $false) -and ($ADUser.Enabled -eq $false )   ) {
                     $EventMessage = "Disabling User: $($365User.DisplayName)"
                     Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
-                    -BlockCredential $true;
+                        -BlockCredential $true;
                 }
                 Write-ScriptEvent -EntryType Warning -EventId 411 -Message $EventMessage
             }
 
             if ($365User.FirstName -notlike $ADUser.givenName) {
-                Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
-                    -FirstName $ADUser.givenName;
+                try {
+                    Set-MsolUser -ObjectId $365User.ObjectId `
+                        -UserPrincipalName $365User.userPrincipalName `
+                        -FirstName $ADUser.givenName;
+                    $EventMessage = "Updated the FirstName for 365User: $($365User.DisplayName) / ADUser: $($ADUser.UserPrincipalName)"
+                    Write-ScriptEvent -EntryType Information -EventId 411 -Message $EventMessage
+                }
+                catch {
+                    $EventMessage = "Something Unexpected happened to SyncActiveDirectoryToOffice365 while attempting to update the FirstName for user: $($365User.DisplayName)  Error was: $ErrorMessage"
+                    $ErrorMessage = $_.Exception.Message
+                    Write-ScriptEvent -EntryType Error -EventId 187 -Message $EventMessage
+                }
+
             }
 
             if ($365User.LastName -notlike $ADUser.sn) {
-                Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
-                    -LastName $ADUser.sn;
+                try {
+                    Set-MsolUser -ObjectId $365User.ObjectId `
+                        -UserPrincipalName $365User.userPrincipalName `
+                        -LastName $ADUser.sn;
+                    $EventMessage = "Updated the LastName for 365User: $($365User.DisplayName) / ADUser: $($ADUser.UserPrincipalName)"
+                    Write-ScriptEvent -EntryType Information -EventId 411 -Message $EventMessage
+                }
+                catch {
+                    $EventMessage = "Something Unexpected happened to SyncActiveDirectoryToOffice365 while attempting to update the LastName for user: $($365User.DisplayName)  Error was: $ErrorMessage"
+                    $ErrorMessage = $_.Exception.Message
+                    Write-ScriptEvent -EntryType Error -EventId 187 -Message $EventMessage
+                }
+
             }
 
             if ($365User.DisplayName -notlike $ADUser.DisplayName) {
-                Set-MsolUser -UserPrincipalName $365User.userPrincipalName `
-                    -DisplayName $ADUser.DisplayName;
+                try {
+                    Set-MsolUser -ObjectId $365User.ObjectId `
+                        -UserPrincipalName $365User.userPrincipalName `
+                        -DisplayName $ADUser.DisplayName;
+                    $EventMessage = "Updated the DisplayName for 365User: $($365User.DisplayName) / ADUser: $($ADUser.UserPrincipalName)"
+                    Write-ScriptEvent -EntryType Information -EventId 411 -Message $EventMessage
+                }
+                catch {
+                    $EventMessage = "Something Unexpected happened to SyncActiveDirectoryToOffice365 while attempting to update the DisplayName for user: $($365User.DisplayName)  Error was: $ErrorMessage"
+                    $ErrorMessage = $_.Exception.Message
+                    Write-ScriptEvent -EntryType Error -EventId 187 -Message $EventMessage
+                }
+
             }
 
             if ($365User.immutableID -notlike $ADUser.immutableID) {
                 # Setting the ImmutableID is only possible if the Tenant is not currently using Federated Authentication
                 if ( (Get-MsolDomain -DomainName "$(($ADUser.UserPrincipalName -split '@')[1])").Authentication -eq 'Federated') {
-                    $ErrorMessage = "SyncActiveDirectoryToOffice365 `nImmutableId for User: $($365User.DisplayName) DOES NOT MATCH!`n"
+                    $ErrorMessage = "SyncActiveDirectoryToOffice365 `nImmutableId for 365User: $($365User.DisplayName) / ADUser: $($ADUser.UserPrincipalName) DOES NOT MATCH!`n"
                     $ErrorMessage += "Domain: $(($ADUser.UserPrincipalName -split '@')[1]) is currently FEDERATED`n"
                     $ErrorMessage += "The Domain must be set back to MANAGED in order to update this ImmutableId."
                     Write-ScriptEvent -EntryType Error -EventId 911 -Message $ErrorMessage
                 }
                 else {
-                    Set-MsolUser -UserPrincipalName $ADUser.UserPrincipalName -ImmutableId $ADUser.immutableID
-                    $EventMessage = "Updated the ImmutableId for User: $($365User.DisplayName)"
-                    Write-ScriptEvent -EntryType Information -EventId 411 -Message $EventMessage
+                    try {
+                        Set-MsolUser -ObjectId $365User.ObjectId `
+                            -UserPrincipalName $ADUser.UserPrincipalName `
+                            -ImmutableId $ADUser.immutableID;
+                        $EventMessage = "Updated the ImmutableId for User: $($365User.DisplayName)"
+                        Write-ScriptEvent -EntryType Information -EventId 411 -Message $EventMessage
+                    }
+                    catch {
+                        $EventMessage = "Something Unexpected happened to SyncActiveDirectoryToOffice365 while attempting to update the immutableId for user: $($365User.DisplayName)  Error was: $ErrorMessage"
+                        $ErrorMessage = $_.Exception.Message
+                        Write-ScriptEvent -EntryType Error -EventId 187 -Message $EventMessage
+                    }
+
                 }
             }
 
