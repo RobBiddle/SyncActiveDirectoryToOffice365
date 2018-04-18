@@ -26,6 +26,14 @@
 #>
 
 function Get-ContactsToSync ($BaseOU, $DomainControllerFQDN, $EmailDomain) {
+
+    # Trap Block to catch anything outside of a try/catch
+    trap {
+        $ErrorMessage = $_.Exception.Message
+        Write-ScriptEvent -EntryType Error -EventId 187 -Message "SyncActiveDirectoryToOffice365 `nSomething Unexpected happened :-(  `nError was: $ErrorMessage"
+        continue
+    }
+
     # Get Contacts from Office 365
     $Contacts365 = Get-MailContact
 

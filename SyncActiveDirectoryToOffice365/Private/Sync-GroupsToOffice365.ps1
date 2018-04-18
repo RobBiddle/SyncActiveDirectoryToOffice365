@@ -31,7 +31,12 @@ function Sync-GroupsToOffice365 {
         $CreateNewGroupsAsSecurityGroups
     )
     foreach ($ADGroup in $GroupsToSync) {
-
+        # Trap Block to catch anything outside of a try/catch
+        trap {
+            $ErrorMessage = $_.Exception.Message
+            Write-ScriptEvent -EntryType Error -EventId 187 -Message "SyncActiveDirectoryToOffice365 `nSomething Unexpected happened :-(  `nError was: $ErrorMessage"
+            continue
+        }
         # If Group is not in Office 365, create Group
         if ($ADGroup.ExistsInOffice365 -eq $false) {
             try {

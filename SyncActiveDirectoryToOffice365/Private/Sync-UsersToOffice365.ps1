@@ -26,6 +26,12 @@
 #>
 
 function Sync-UsersToOffice365 ($UsersToSync) {
+    # Trap Block to catch anything outside of a try/catch
+    trap {
+        $ErrorMessage = $_.Exception.Message
+        Write-ScriptEvent -EntryType Error -EventId 187 -Message "SyncActiveDirectoryToOffice365 `nSomething Unexpected happened :-(  `nError was: $ErrorMessage"
+        continue
+    }
     Add-Type -AssemblyName System.Web # Provides support for generating random passwords
     $StringForEventMessage = $null
     foreach ($ADUser in $UsersToSync) {
