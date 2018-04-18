@@ -105,6 +105,13 @@ function Sync-ActiveDirectoryToOffice365 {
     # This is required to catch errors from imported cmdlets :-/
     $Global:ErrorActionPreference = 'Stop'
     
+    # Trap Block to catch anything outside of a try/catch
+    trap {
+        $ErrorMessage = $_.Exception.Message
+        Write-ScriptEvent -EntryType Error -EventId 187 -Message "SyncActiveDirectoryToOffice365 `nSomething Unexpected happened :-(  `nError was: $ErrorMessage"
+        continue
+    }
+
     # Force ObjectsToSync to be an Array, even if only one of the validation set options is entered
     $ObjectsToSync = @($ObjectsToSync)
 
